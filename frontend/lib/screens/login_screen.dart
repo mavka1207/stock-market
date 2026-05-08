@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   static const routeName = '/login';
@@ -10,53 +12,132 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // These will hold the text that user types
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+
+  bool _isLoginMode = true; // true = login, false = signup
 
   @override
   void dispose() {
-    // Clean up controllers when screen is destroyed
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void _onLoginPressed() {
-    // For now just print; later we will call AuthProvider here
-    final email = _emailController.text;
+  void _submit() async {
+    final email = _emailController.text.trim();
     final password = _passwordController.text;
-    debugPrint('Login pressed with: $email / $password');
+    final confirmPassword = _confirmPasswordController.text;
+
+    // ------ Basic validation ------
+    if (email.isEmpty || password.isEmpty || (!_isLoginMode && confirmPassword.isEmpty)) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill all fields')),
+      );
+      return;
+    }
+
+    if (!_isLoginMode && password != confirmPassword) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Passwords do not match')),
+      );
+      return;
+    }
+
+    // ------ Access AuthProvider and call login or signup ------
+    final auth = context.read<AuthProvider>();
+
+    String? errorMessage;
+
+    if (_isLoginMode) {
+      // LOGIN
+      debugPrint('UI: calling AuthProvider.login');
+      errorMessage = await auth.login(email: email, password: password);
+    } else {
+      // SIGNUP
+      debugPrint('UI: calling AuthProvider.signup');
+      errorMessage = await auth.signup(email: email, password: password);
+    }
+
+    debugPrint('UI: Auth result errorMessage = $errorMessage');
+
+    // ----- If there was an error, show ERROR snackbar --------
+    if (errorMessage != null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
+      return;  
+    }
+
+    // ------ SUCCESS SIGNED UP --------
+    if (!mounted) return;
+
+    debugPrint('UI: Login/Signup successful');
+
+    if (!_isLoginMode) {
+      _emailController.clear();
+      _passwordController.clear();
+      _confirmPasswordController.clear();
+      debugPrint('UI: New user signed up with email: $email');
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(_isLoginMode ? 'Login successful' : 'Signup successful'),
+      ),
+    );
+
+    // ------ Navigate to Watchlist ---------
+    // Navigator.pushReplacementNamed(context, WatchlistScreen.routeName);
   }
 
-  void _onSignupPressed() {
-    // Later: navigate to signup screen
-    debugPrint('Signup pressed');
+  void _toggleMode() {
+    setState(() {
+      _isLoginMode = !_isLoginMode;
+    });
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Stock Market Login'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 24),
-            const Text(
-              'Welcome back!',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
+Widget build(BuildContext context) {
+  final titleText = _isLoginMode
+      ? 'Stock Market | Login'
+      : 'Stock Market | Signup';
+
+  final mainTitleText = _isLoginMode
+      ? 'Login to your account'
+      : 'Create a new account';
+
+  final mainButtonText = _isLoginMode ? 'Login' : 'Sign Up';
+  final toggleText = _isLoginMode
+      ? "Don't have an account? Sign up"
+      : "Already have an account? Login";
+
+  return Scaffold(
+    appBar: AppBar(
+      title: Text(titleText),
+    ),
+    body: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 24),
+          Text(
+            mainTitleText,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
             ),
+            textAlign: TextAlign.center,
+          ),
             const SizedBox(height: 24),
 
-            // Email field
+            // Email
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
@@ -67,28 +148,44 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Password field
+            // Password
             TextField(
               controller: _passwordController,
-              obscureText: true, // hide password text
+              obscureText: true,
               decoration: const InputDecoration(
                 labelText: 'Password',
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
-            // Login button
+            // Confirm password (only in signup mode)
+            if (!_isLoginMode)
+              Column(
+                children: [
+                  TextField(
+                    controller: _confirmPasswordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Confirm Password',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+
+            // Main button (Login or Sign Up)
             ElevatedButton(
-              onPressed: _onLoginPressed,
-              child: const Text('Login'),
+              onPressed: _submit,
+              child: Text(mainButtonText),
             ),
             const SizedBox(height: 8),
 
-            // Signup button
-            OutlinedButton(
-              onPressed: _onSignupPressed,
-              child: const Text('Go to Signup'),
+            // Toggle between Login and Signup
+            TextButton(
+              onPressed: _toggleMode,
+              child: Text(toggleText),
             ),
           ],
         ),

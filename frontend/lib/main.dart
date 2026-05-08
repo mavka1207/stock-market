@@ -15,13 +15,8 @@ import 'screens/login_screen.dart';
 // import 'screens/watchlist_screen.dart'; // uncomment later when you create it
 
 Future<void> main() async {
-  // Make sure Flutter is ready before async work
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize local database (SQLite / Hive)
   await LocalDB.database;
-
-  // Start the app
   runApp(const MyApp());
 }
 
