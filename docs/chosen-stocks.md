@@ -1,6 +1,6 @@
 # 20 Chosen Monitored Stocks
 
-Ниже представлен список из 20 компаний, которые мы выбрали для мониторинга в нашем приложении (эти тикеры присутствуют в базе нашего `mock-server`):
+Below is the list of 20 companies that we have selected to monitor in our application (these tickers are available in our `mock-server` database):
 
 1. **UNT**
 2. **TRNS**
@@ -25,4 +25,4 @@
 
 ## Implementation Plan (Flutter)
 
-Список этих символов будет жестко закодирован (hardcoded) в файле `lib/utils/constants.dart`. Приложение будет запрашивать данные только для этих 20 акций каждые 200 миллисекунд (5 раз в секунду).
+The list of these symbols will be hardcoded in the `lib/utils/constants.dart` file. The application will request data for only these 20 stocks every 200 milliseconds (5 times per second).
