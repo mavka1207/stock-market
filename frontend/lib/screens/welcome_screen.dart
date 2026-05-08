@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'login_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
-  static const routeName = '/';
+  static const routeName = '/welcome';
 
   const WelcomeScreen({super.key});
 

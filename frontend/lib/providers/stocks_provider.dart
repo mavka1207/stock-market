@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show Platform;
 import 'package:http/http.dart' as http;
 
 class StockPrice {
@@ -56,12 +57,33 @@ class StocksProvider extends ChangeNotifier {
     return null;
   }
 
+  // shows how much the price changed
+  double? getPriceChange(String symbol) {
+    final current = _prices[symbol]?.rate;
+    final previous = _previousPrices[symbol];
+
+    if (current == null || previous == null) return null;
+    return current - previous;
+  }
+
   // get price of one stock from mock-server
   Future<void> _fetchPrice(String symbol) async {
     try {
-      final response = await http.get(
-        Uri.parse('http://localhost:5001/exchange_rate/$symbol'),
-        ).timeout(const Duration(milliseconds: 500));
+
+      String baseUrl;
+      if (Platform.isAndroid) {
+        baseUrl = 'http://10.0.2.2:5001';
+      } else {
+        baseUrl = 'http://127.0.0.1:5001';
+      }
+
+      final response = await http
+          .get(Uri.parse('$baseUrl/exchange_rate/$symbol'))
+          .timeout(const Duration(milliseconds: 500));
+
+      // final response = await http.get(
+      //   Uri.parse('http://localhost:5001/exchange_rate/$symbol'),
+      // ).timeout(const Duration(milliseconds: 500));
       
 
       if (response.statusCode == 200) {
@@ -102,7 +124,8 @@ class StocksProvider extends ChangeNotifier {
     _timer?.cancel();
     fetchAllPrices(); // first request
     _timer = Timer.periodic(
-      const Duration(milliseconds: 200), // 5 times per second
+      const Duration(milliseconds: 1000), // testing with 1s interval
+      // const Duration(milliseconds: 200), // 5 times per second
       (_) async {
         await Future.wait(
           watchlist.map((symbol) => _fetchPrice(symbol)),

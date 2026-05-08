@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import 'nav_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   static const routeName = '/login';
@@ -55,15 +56,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (_isLoginMode) {
       // LOGIN
-      debugPrint('UI: calling AuthProvider.login');
+      debugPrint('🟣 UI: calling AuthProvider.login');
       errorMessage = await auth.login(email: email, password: password);
     } else {
       // SIGNUP
-      debugPrint('UI: calling AuthProvider.signup');
+      debugPrint('🟣 UI: calling AuthProvider.signup');
       errorMessage = await auth.signup(email: email, password: password);
     }
-
-    debugPrint('UI: Auth result errorMessage = $errorMessage');
 
     // ----- If there was an error, show ERROR snackbar --------
     if (errorMessage != null) {
@@ -74,26 +73,20 @@ class _LoginScreenState extends State<LoginScreen> {
       return;  
     }
 
-    // ------ SUCCESS SIGNED UP --------
+    // ------ SUCCESS SIGNED UP / LOGGED IN  --------
     if (!mounted) return;
 
-    debugPrint('UI: Login/Signup successful');
+    debugPrint('🟣 UI: Login/Signup successful');
 
     if (!_isLoginMode) {
       _emailController.clear();
       _passwordController.clear();
       _confirmPasswordController.clear();
-      debugPrint('UI: New user signed up with email: $email');
+      debugPrint('🟣 UI: New user signed up with email: $email');
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(_isLoginMode ? 'Login successful' : 'Signup successful'),
-      ),
-    );
-
     // ------ Navigate to Watchlist ---------
-    // Navigator.pushReplacementNamed(context, WatchlistScreen.routeName);
+    Navigator.pushReplacementNamed(context, NavScreen.routeName);
   }
 
   void _toggleMode() {
