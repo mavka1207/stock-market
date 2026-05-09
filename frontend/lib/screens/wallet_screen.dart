@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/wallet_provider.dart';
+import '../providers/stocks_provider.dart';
 import '../utils/formatters.dart';
 
 class WalletScreen extends StatelessWidget {
@@ -8,8 +9,16 @@ class WalletScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<WalletProvider>(
-      builder: (context, wallet, _) {
+    return Consumer2<WalletProvider, StocksProvider>(
+      builder: (context, wallet, stocks, _) {
+        // calculate total portfolio value using live prices
+        double totalPortfolioValue = wallet.holdings.fold(0.0, (sum, holding) {
+          final livePrice = stocks.getPriceForSymbol( holding.symbol) ?? holding.averageBuyPrice; // fallback to buy price if live price unavailable
+          return sum + (holding.quantity * livePrice);
+        });
+
+        final totalValue = wallet.balance + totalPortfolioValue;
+
         return Column(
           children: [
             // ---- BALANCE CARD ----
@@ -36,8 +45,43 @@ class WalletScreen extends StatelessWidget {
                   Text(
                     formatBalance(wallet.balance),
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: Colors.white,      
                       fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(color: Color(0xFF30363D)),
+                  const SizedBox(height: 8),
+                  // total portfolio value
+                  const Text(
+                    'Portfolio Value',
+                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    formatBalance(totalPortfolioValue),
+                    style: const TextStyle(
+                      color: Color(0xFF58A6FF),
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(color: Color(0xFF30363D)),
+                  const SizedBox(height: 8),
+                  // Total value (balance + portfolio)
+                  const Text(
+                    'Total Value',
+                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    formatBalance(totalValue),
+                    style: TextStyle(
+                      // green if above 1M, red if below, white if equal
+                      color: compareColor(totalValue, 1000000),                      
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -112,6 +156,10 @@ class WalletScreen extends StatelessWidget {
                       itemCount: wallet.holdings.length,
                       itemBuilder: (context, index) {
                         final holding = wallet.holdings[index];
+                        // use live price, fallback to averageBuyPrice
+                        final livePrice = stocks.getPriceForSymbol(holding.symbol)
+                            ?? holding.averageBuyPrice;
+                        final currentValue = holding.quantity * livePrice;
                         return Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,
@@ -124,19 +172,32 @@ class WalletScreen extends StatelessWidget {
                                 children: [
                                   Expanded(
                                     flex: 2,
-                                    child: Text(
-                                      holding.symbol,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          holding.symbol,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Avg: \$${holding.averageBuyPrice.toStringAsFixed(2)}',
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            color: Colors.white54,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
+                                  ),                                  
                                   SizedBox(
                                     width: 80,
                                     child: Text(
-                                      '${holding.quantity}',
+                                      holding.quantity.toStringAsFixed(0),
                                       textAlign: TextAlign.center,
                                       style: const TextStyle(
                                         fontSize: 14,
@@ -147,7 +208,7 @@ class WalletScreen extends StatelessWidget {
                                   SizedBox(
                                     width: 110,
                                     child: Text(
-                                      '\$${(holding.quantity * holding.averageBuyPrice).toStringAsFixed(2)}',
+                                      '\$${currentValue.toStringAsFixed(2)}',
                                       textAlign: TextAlign.end,
                                       style: const TextStyle(
                                         fontSize: 14,

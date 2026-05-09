@@ -15,9 +15,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   void initState() {
     super.initState();
 
-    // TODO later: check AuthProvider to see if user is already logged in
     // For now: wait 2 seconds, then go to login screen
     Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted) return;
       Navigator.pushReplacementNamed(context, LoginScreen.routeName);
     });
   }

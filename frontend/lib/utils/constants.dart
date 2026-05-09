@@ -28,7 +28,3 @@
   {'symbol': 'LNC',  'name': 'Lincoln National'},
   {'symbol': 'PPG',  'name': 'PPG Industries'},
 ];
-
-
-// watchlist[i]['symbol']!   // for the ticker
-// watchlist[i]['name']!     // for the company name

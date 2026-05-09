@@ -33,15 +33,7 @@ class _TradeScreenState extends State<TradeScreen> {
     super.dispose();
   }
 
-  double get _currentPrice {
-    final stocks = context.read<StocksProvider>();
-    return stocks.getPriceForSymbol(_selectedSymbol!) ?? 0.0;
-  }
-
-  double get _totalCost {
-    final qty = double.tryParse(_quantityController.text) ?? 0;
-    return qty * _currentPrice;
-  }
+  Color get _tradeColor => _isBuying ? const Color(0xFF00C853) : const Color(0xFFFF1744);
 
   Future<void> _confirm() async {
     final qty = double.tryParse(_quantityController.text) ?? 0;
@@ -52,13 +44,15 @@ class _TradeScreenState extends State<TradeScreen> {
       return;
     }
 
+    final currentPrice = context.read<StocksProvider>().getPriceForSymbol(_selectedSymbol!) ?? 0.0;
+
     final wallet = context.read<WalletProvider>();
     String? error;
 
     if (_isBuying) {
-      error = await wallet.buy(_selectedSymbol!, qty, _currentPrice);
+      error = await wallet.buy(_selectedSymbol!, qty, currentPrice);
     } else {
-      error = await wallet.sell(_selectedSymbol!, qty, _currentPrice);
+      error = await wallet.sell(_selectedSymbol!, qty, currentPrice);
     }
 
     if (!mounted) return;
@@ -76,9 +70,7 @@ class _TradeScreenState extends State<TradeScreen> {
                 ? 'Successfully bought $_selectedSymbol'
                 : 'Successfully sold $_selectedSymbol',
           ),
-          backgroundColor: _isBuying
-              ? const Color(0xFF00C853)
-              : const Color(0xFFFF1744),
+          backgroundColor: _tradeColor,
         ),
       );
     }
@@ -87,6 +79,7 @@ class _TradeScreenState extends State<TradeScreen> {
   @override
   Widget build(BuildContext context) {
     final wallet = context.watch<WalletProvider>();
+
     final holding = wallet.holdings.firstWhere(
       (h) => h.symbol == _selectedSymbol,
       orElse: () => Holding(symbol: '', quantity: 0, averageBuyPrice: 0),
@@ -136,23 +129,60 @@ class _TradeScreenState extends State<TradeScreen> {
           ],
 
           // ── INFO CARDS ──────────────────────────────
-          Row(
-            children: [
-              _infoCard(
-                'Current Price',
-                '\$${_currentPrice.toStringAsFixed(2)}',
-              ),
-              const SizedBox(width: 12),
-              _infoCard(
-                'Your Holdings',
-                '${holding.quantity.toStringAsFixed(0)} shares',
-              ),
-              const SizedBox(width: 12),
-              _infoCard(
-                'Balance',
-                formatBalance(wallet.balance),
-              ),
-            ],
+          Consumer<StocksProvider>(
+            builder: (context, stocks, _) {
+              final currentPrice = stocks.getPriceForSymbol(_selectedSymbol!) ?? 0.0;
+              final direction = stocks.getPriceDirection(_selectedSymbol!);
+              final color = priceDirectionColor(direction);
+              final change = stocks.getPriceChange(_selectedSymbol!);
+
+              return Row(
+                children: [
+                  // live price card
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF161B22),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFF30363D)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Current Price',
+                              style: TextStyle(color: Colors.white54, fontSize: 11)),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Text(
+                                '\$${currentPrice.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                    color: color,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                change == null
+                                    ? ''
+                                    : '${change >= 0 ? '+' : ''}${change.toStringAsFixed(2)}',
+                                style: TextStyle(color: color, fontSize: 10),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // your existing holdings and balance cards stay the same
+                  _infoCard('Your Holdings', '${holding.quantity.toStringAsFixed(0)} shares'),
+                  const SizedBox(width: 12),
+                  _infoCard('Balance', formatBalance(wallet.balance)),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 24),
 
@@ -166,7 +196,7 @@ class _TradeScreenState extends State<TradeScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
                       color: _isBuying
-                          ? const Color(0xFF00C853)
+                          ? _tradeColor
                           : const Color(0xFF30363D),
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -190,7 +220,7 @@ class _TradeScreenState extends State<TradeScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
                       color: !_isBuying
-                          ? const Color(0xFFFF1744)
+                          ? _tradeColor
                           : const Color(0xFF30363D),
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -232,39 +262,40 @@ class _TradeScreenState extends State<TradeScreen> {
           const SizedBox(height: 16),
 
           // ── TOTAL COST ──────────────────────────────
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF161B22),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFF30363D)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Total cost',
-                  style: TextStyle(color: Colors.white70, fontSize: 15),
+          Consumer<StocksProvider>(
+            builder: (context, stocks, _) {
+              final currentPrice = stocks.getPriceForSymbol(_selectedSymbol!) ?? 0.0;
+              final qty = double.tryParse(_quantityController.text) ?? 0;
+              final totalCost = qty * currentPrice;
+
+              return Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF161B22),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFF30363D)),
                 ),
-                Text(
-                  '\$${_totalCost.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Total cost',
+                        style: TextStyle(color: Colors.white70, fontSize: 15)),
+                    Text('\$${totalCost.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold)),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
           const SizedBox(height: 24),
 
           // ── CONFIRM BUTTON ───────────────────────────
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: _isBuying
-                  ? const Color(0xFF00C853)
-                  : const Color(0xFFFF1744),
+              backgroundColor: _tradeColor,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -288,7 +319,7 @@ class _TradeScreenState extends State<TradeScreen> {
   }
 
   // ── helper widget ──────────────────────────────────
-  Widget _infoCard(String label, String value) {
+  Widget _infoCard(String label, String value){
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -307,7 +338,7 @@ class _TradeScreenState extends State<TradeScreen> {
             const SizedBox(height: 4),
             Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
