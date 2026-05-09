@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/nav_provider.dart';
+import '../providers/auth_provider.dart';
+import '../providers/wallet_provider.dart';
+import 'login_screen.dart';
 import 'watchlist_screen.dart';
 import 'trade_screen.dart';
 import 'wallet_screen.dart';
@@ -9,7 +12,7 @@ import 'history_screen.dart';
 
 class NavScreen extends StatelessWidget {
   static const String routeName = '/app';
-  
+
   const NavScreen({super.key});
 
   static const List<String> _titles = [
@@ -38,7 +41,9 @@ class NavScreen extends StatelessWidget {
             icon: const Icon(Icons.logout),
             tooltip: 'Logout',
             onPressed: () {
-              Navigator.pushReplacementNamed(context, '/login');
+              context.read<AuthProvider>().logout();
+              context.read<WalletProvider>().clear();
+              Navigator.pushReplacementNamed(context, LoginScreen.routeName);
             },
           ),
         ],

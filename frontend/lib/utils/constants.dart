@@ -1,4 +1,12 @@
-const List<Map<String, String>> watchlist = [
+  // 20 stocks
+  const List<String> watchlist = [
+    'UNT', 'TRNS', 'EGP', 'PHG', 'SVT',
+    'SNE', 'JOB', 'MDT', 'MDC', 'NC',
+    'MO', 'BPOP', 'ALCO', 'SPXC', 'TRN',
+    'ADM', 'GGG', 'BAC', 'LNC', 'PPG',
+  ];
+  
+  const List<Map<String, String>> watchlistDetails = [
   {'symbol': 'UNT',  'name': 'Unit Corporation'},
   {'symbol': 'TRNS', 'name': 'Transcat'},
   {'symbol': 'EGP',  'name': 'EastGroup Properties'},
@@ -20,6 +28,7 @@ const List<Map<String, String>> watchlist = [
   {'symbol': 'LNC',  'name': 'Lincoln National'},
   {'symbol': 'PPG',  'name': 'PPG Industries'},
 ];
+
 
 // watchlist[i]['symbol']!   // for the ticker
 // watchlist[i]['name']!     // for the company name

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/wallet_provider.dart';
 import 'nav_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -85,8 +86,15 @@ class _LoginScreenState extends State<LoginScreen> {
       debugPrint('🟣 UI: New user signed up with email: $email');
     }
 
-    // ------ Navigate to Watchlist ---------
-    Navigator.pushReplacementNamed(context, NavScreen.routeName);
+    // ------ Load wallet BEFORE navigating --------
+    final userId = auth.currentUserId;
+    if (userId != null) {
+      await context.read<WalletProvider>().loadWallet(userId);
+    }
+
+    // ------ Navigate to NavScreen --------
+    if (!mounted) return;
+    Navigator.pushReplacementNamed(context, NavScreen.routeName);  
   }
 
   void _toggleMode() {

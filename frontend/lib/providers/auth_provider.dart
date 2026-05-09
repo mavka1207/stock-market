@@ -8,6 +8,8 @@ class AuthProvider extends ChangeNotifier {
 
   Map<String, dynamic>? get currentUser => _currentUser;
 
+  int? get currentUserId => _currentUser?['id'] as int?;
+
   bool get isLoggedIn => _currentUser != null;
 
   // hashing password
