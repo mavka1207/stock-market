@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/wallet_provider.dart';
 import '../providers/stocks_provider.dart';
 import '../utils/formatters.dart';
+import 'transactions_screen.dart';
 
 class WalletScreen extends StatelessWidget {
   const WalletScreen({super.key});
@@ -11,9 +12,9 @@ class WalletScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer2<WalletProvider, StocksProvider>(
       builder: (context, wallet, stocks, _) {
-        // calculate total portfolio value using live prices
         double totalPortfolioValue = wallet.holdings.fold(0.0, (sum, holding) {
-          final livePrice = stocks.getPriceForSymbol( holding.symbol) ?? holding.averageBuyPrice; // fallback to buy price if live price unavailable
+          final livePrice = stocks.getPriceForSymbol(holding.symbol)
+              ?? holding.averageBuyPrice;
           return sum + (holding.quantity * livePrice);
         });
 
@@ -36,16 +37,13 @@ class WalletScreen extends StatelessWidget {
                 children: [
                   const Text(
                     'Available Balance',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: Colors.white70, fontSize: 13),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     formatBalance(wallet.balance),
                     style: const TextStyle(
-                      color: Colors.white,      
+                      color: Colors.white,
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
@@ -53,7 +51,6 @@ class WalletScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   const Divider(color: Color(0xFF30363D)),
                   const SizedBox(height: 8),
-                  // total portfolio value
                   const Text(
                     'Portfolio Value',
                     style: TextStyle(color: Colors.white70, fontSize: 13),
@@ -70,7 +67,6 @@ class WalletScreen extends StatelessWidget {
                   const SizedBox(height: 12),
                   const Divider(color: Color(0xFF30363D)),
                   const SizedBox(height: 8),
-                  // Total value (balance + portfolio)
                   const Text(
                     'Total Value',
                     style: TextStyle(color: Colors.white70, fontSize: 13),
@@ -79,8 +75,7 @@ class WalletScreen extends StatelessWidget {
                   Text(
                     formatBalance(totalValue),
                     style: TextStyle(
-                      // green if above 1M, red if below, white if equal
-                      color: compareColor(totalValue, 1000000),                      
+                      color: compareColor(totalValue, 1000000),
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
@@ -89,9 +84,36 @@ class WalletScreen extends StatelessWidget {
               ),
             ),
 
+            // ---- TRANSACTION HISTORY BUTTON ----
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const TransactionsScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.history, size: 16),
+                  label: const Text('Transaction History'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white70,
+                    side: const BorderSide(color: Color(0xFF30363D)),
+                  ),
+                ),
+              ),
+            ),
+
             // ---- HOLDINGS HEADER ----
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
               decoration: const BoxDecoration(
                 color: Color(0xFF161B22),
                 border: Border(
@@ -156,9 +178,9 @@ class WalletScreen extends StatelessWidget {
                       itemCount: wallet.holdings.length,
                       itemBuilder: (context, index) {
                         final holding = wallet.holdings[index];
-                        // use live price, fallback to averageBuyPrice
-                        final livePrice = stocks.getPriceForSymbol(holding.symbol)
-                            ?? holding.averageBuyPrice;
+                        final livePrice =
+                            stocks.getPriceForSymbol(holding.symbol)
+                                ?? holding.averageBuyPrice;
                         final currentValue = holding.quantity * livePrice;
                         return Padding(
                           padding: const EdgeInsets.symmetric(
@@ -173,7 +195,8 @@ class WalletScreen extends StatelessWidget {
                                   Expanded(
                                     flex: 2,
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           holding.symbol,
@@ -193,7 +216,7 @@ class WalletScreen extends StatelessWidget {
                                         ),
                                       ],
                                     ),
-                                  ),                                  
+                                  ),
                                   SizedBox(
                                     width: 80,
                                     child: Text(

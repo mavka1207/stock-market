@@ -9,7 +9,7 @@ import 'login_screen.dart';
 import 'watchlist_screen.dart';
 import 'trade_screen.dart';
 import 'wallet_screen.dart';
-import 'history_screen.dart';
+// import 'history_screen.dart';
 
 class NavScreen extends StatefulWidget { 
   static const String routeName = '/app';
@@ -44,14 +44,14 @@ class _NavScreenState extends State<NavScreen> {
     'My Watchlist',
     'Trade Stocks',
     'My Wallet',
-    'Historical Data',
+    // 'Historical Data',
   ];
 
   static const List<Widget> _pages = [
     WatchlistScreen(),
     TradeScreen(),
     WalletScreen(),
-    HistoryScreen(),
+    // HistoryScreen(),
   ];
 
   @override
@@ -82,7 +82,7 @@ class _NavScreenState extends State<NavScreen> {
           NavigationDestination(icon: Icon(Icons.show_chart), label: 'Watchlist'),
           NavigationDestination(icon: Icon(Icons.swap_horiz), label: 'Trade'),
           NavigationDestination(icon: Icon(Icons.account_balance_wallet), label: 'Wallet'),
-          NavigationDestination(icon: Icon(Icons.bar_chart), label: 'History'),
+          // NavigationDestination(icon: Icon(Icons.bar_chart), label: 'History'),
         ],
       ),
     );
