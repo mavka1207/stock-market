@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
+// import 'dart:io' show Platform;
 import 'package:http/http.dart' as http;
+import '../utils/constants.dart';
 
 class StockPrice {
   final String symbol;
@@ -18,13 +20,13 @@ class StockPrice {
 }
 
 class StocksProvider extends ChangeNotifier {
-  // 20 stocks
-  static const List<String> watchlist = [
-    'UNT', 'TRNS', 'EGP', 'PHG', 'SVT',
-    'SNE', 'JOB', 'MDT', 'MDC', 'NC',
-    'MO', 'BPOP', 'ALCO', 'SPXC', 'TRN',
-    'ADM', 'GGG', 'BAC', 'LNC', 'PPG',
-  ];
+  // 20 stocks moved to constants.dart for better reusability
+  // static const List<String> watchlist = [
+  //   'UNT', 'TRNS', 'EGP', 'PHG', 'SVT',
+  //   'SNE', 'JOB', 'MDT', 'MDC', 'NC',
+  //   'MO', 'BPOP', 'ALCO', 'SPXC', 'TRN',
+  //   'ADM', 'GGG', 'BAC', 'LNC', 'PPG',
+  // ];
 
   final Map<String, StockPrice> _prices = {};
   final Map<String, double> _previousPrices = {};
@@ -56,12 +58,36 @@ class StocksProvider extends ChangeNotifier {
     return null;
   }
 
+  // shows how much the price changed
+  double? getPriceChange(String symbol) {
+    final current = _prices[symbol]?.rate;
+    final previous = _previousPrices[symbol];
+
+    if (current == null || previous == null) return null;
+    return current - previous;
+  }
+
   // get price of one stock from mock-server
   Future<void> _fetchPrice(String symbol) async {
     try {
+
+      // ------ MAIRE's SETUP FOR ANDROID EMULATOR ------
+      // String baseUrl;
+      // if (Platform.isAndroid) {
+      //   baseUrl = 'http://10.0.2.2:5001';
+      // } else {
+      //   baseUrl = 'http://127.0.0.1:5001';
+      // }
+
+      // final response = await http
+      //     .get(Uri.parse('$baseUrl/exchange_rate/$symbol'))
+      //     .timeout(const Duration(milliseconds: 500));
+
+
+      // ------ ORIGINAL CODE ------
       final response = await http.get(
         Uri.parse('http://localhost:5001/exchange_rate/$symbol'),
-        ).timeout(const Duration(milliseconds: 500));
+      ).timeout(const Duration(milliseconds: 500));
       
 
       if (response.statusCode == 200) {
@@ -102,6 +128,7 @@ class StocksProvider extends ChangeNotifier {
     _timer?.cancel();
     fetchAllPrices(); // first request
     _timer = Timer.periodic(
+      // const Duration(milliseconds: 1000), // testing with 1s interval
       const Duration(milliseconds: 200), // 5 times per second
       (_) async {
         await Future.wait(
@@ -112,6 +139,13 @@ class StocksProvider extends ChangeNotifier {
     );
   }
 
+  double? getPriceForSymbol(String symbol) {
+    try {
+      return allPrices.firstWhere((s) => s.symbol == symbol).rate;
+    } catch (_) {
+      return null;
+    }
+  }
   // stop real-time updates (at logout)
   void stopRealTimeUpdates() {
     _timer?.cancel();
