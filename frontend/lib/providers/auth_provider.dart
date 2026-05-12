@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:crypto/crypto.dart';
 import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import '../db/local_db.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -8,6 +8,7 @@ class AuthProvider extends ChangeNotifier {
 
   Map<String, dynamic>? get currentUser => _currentUser;
 
+  int? get currentUserId => _currentUser?['id'] as int?;
   bool get isLoggedIn => _currentUser != null;
 
   // hashing password
