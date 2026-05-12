@@ -28,3 +28,10 @@
   {'symbol': 'LNC',  'name': 'Lincoln National'},
   {'symbol': 'PPG',  'name': 'PPG Industries'},
 ];
+
+String getStockName(String symbol) {
+  return watchlistDetails.firstWhere(
+    (s) => s['symbol'] == symbol,
+    orElse: () => {'name': symbol},
+  )['name']!;
+}

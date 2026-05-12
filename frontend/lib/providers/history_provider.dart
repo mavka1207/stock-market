@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+// import 'dart:io' show Platform;
 
 class PricePoint {
   final DateTime date;
@@ -13,9 +14,23 @@ class PricePoint {
 
   factory PricePoint.fromMap(Map<String, dynamic> map) {
     return PricePoint(
-      date: DateTime.parse(map['date']),
+      date: _parseRfc2822(map['date']),
       close: (map['close'] as num).toDouble(),
     );
+  }
+
+  static DateTime _parseRfc2822(String raw) {
+    // Parses: "Mon, 01 Apr 2024 00:00:00 GMT"
+    const months = {
+      'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4,
+      'May': 5, 'Jun': 6, 'Jul': 7, 'Aug': 8,
+      'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12,
+    };
+    final parts = raw.split(' ');
+    final day   = int.parse(parts[1]);
+    final month = months[parts[2]]!;
+    final year  = int.parse(parts[3]);
+    return DateTime.utc(year, month, day);
   }
 }
 
@@ -44,10 +59,25 @@ class HistoryProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Loading data for the last year
+      
       final endDate = DateTime.now();
       final startDate = endDate.subtract(const Duration(days: 365));
 
+      // ------ MAIRE's SETUP FOR ANDROID EMULATOR ------
+    // String baseUrl;
+    //   if (Platform.isAndroid) {
+    //     baseUrl = 'http://10.0.2.2:5001';
+    //   } else {
+    //     baseUrl = 'http://127.0.0.1:5001';
+    //   }
+
+    //   final url = Uri.parse(
+    //     '$baseUrl/hist/$symbol'
+    //     '?start_date=${_formatDate(startDate)}'
+    //     '&end_date=${_formatDate(endDate)}',
+    //   );
+
+      // ------ ORIGINAL CODE ------
       final url = Uri.parse(
         'http://localhost:5001/hist/$symbol'
         '?start_date=${_formatDate(startDate)}'
@@ -78,6 +108,13 @@ class HistoryProvider extends ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  // Format date as YYYY-MM-DD for API query
+  String _formatDate(DateTime date) {
+    return '${date.year}-'
+        '${date.month.toString().padLeft(2, '0')}-'
+        '${date.day.toString().padLeft(2, '0')}';
   }
 
   // Apply filter (day / week / month / year)
@@ -119,13 +156,6 @@ class HistoryProvider extends ChangeNotifier {
     if (_filteredData.isEmpty) {
       _filteredData = List.from(_allData);
     }
-  }
-
-  // Formatting date for API
-  String _formatDate(DateTime date) {
-    return '${date.year}-'
-        '${date.month.toString().padLeft(2, '0')}-'
-        '${date.day.toString().padLeft(2, '0')}';
   }
 
   // Minimum price in filtered data

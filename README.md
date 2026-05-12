@@ -7,11 +7,13 @@ stock-market/
 ├── frontend/                                <- Flutter app
 │   ├── lib/
 │   │   ├── main.dart                        <- app entry point
-│   │   ├── app.dart                         <- app config / routes
 │   │   ├── screens/
 │   │   │   ├── login_screen.dart            <- login / signup page
+│   │   │   ├── welcome_screen.dart          <- Short welcome page (2 sec)
+│   │   │   ├── nav_screen.dart              <- main with navigation control
 │   │   │   ├── watchlist_screen.dart        <- 20 monitored stocks (real-time)
 │   │   │   ├── wallet_screen.dart           <- owned stocks + fake balance
+│   │   │   ├── transaction_screen.dart      <- 
 │   │   │   ├── stock_details_screen.dart    <- stock details + current price
 │   │   │   ├── history_screen.dart          <- historical data + chart
 │   │   │   └── trade_screen.dart            <- buy / sell stock
@@ -31,8 +33,6 @@ stock-market/
 │   │   │   └── transaction.dart             <- buy/sell history model
 │   │   ├── widgets/
 │   │   │   ├── stock_tile.dart              <- stock item in watchlist
-│   │   │   ├── wallet_card.dart             <- portfolio summary card
-│   │   │   ├── trade_form.dart              <- buy/sell form widget
 │   │   │   └── stock_chart.dart             <- historical chart widget
 │   │   ├── db/
 │   │   │   └── local_db.dart                <- SQLite / Hive setup

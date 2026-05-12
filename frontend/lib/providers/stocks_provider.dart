@@ -128,8 +128,8 @@ class StocksProvider extends ChangeNotifier {
     _timer?.cancel();
     fetchAllPrices(); // first request
     _timer = Timer.periodic(
-      // const Duration(milliseconds: 1000), // testing with 1s interval
-      const Duration(milliseconds: 200), // 5 times per second
+      const Duration(milliseconds: 1000), // testing with 1s interval
+      // const Duration(milliseconds: 200), // 5 times per second
       (_) async {
         await Future.wait(
           watchlist.map((symbol) => _fetchPrice(symbol)),
