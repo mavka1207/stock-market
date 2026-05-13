@@ -187,7 +187,7 @@ class _HistoryScreenState extends State<HistoryChartScreen> {
 
               // ── STOCK CHART WIDGET ──
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.only(left: 26, right: 0, bottom: 16),
                 child: StockChart(data: data, symbol: widget.symbol),
               ),
 

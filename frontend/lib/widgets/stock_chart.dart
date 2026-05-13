@@ -43,6 +43,8 @@ class StockChart extends StatelessWidget {
     final prices = data.map((p) => p.close).toList();
     final minY = prices.reduce((a, b) => a < b ? a : b) * 0.98;
     final maxY = prices.reduce((a, b) => a > b ? a : b) * 1.02;
+    final range = maxX - minX;
+    final padding = range * 0.02; // 2% padding on each side
 
     final spots = data
         .map((p) => FlSpot(
@@ -54,12 +56,15 @@ class StockChart extends StatelessWidget {
     return SizedBox(
       height: 260,
       child: LineChart(
+        // ----- MAIN CHART DATA -----
         LineChartData(
-          minX: minX,
-          maxX: maxX,
+          minX: minX - padding,
+          maxX: maxX + padding,
           minY: minY,
           maxY: maxY,
           clipData: const FlClipData.all(),
+
+          // ----- horizontal grid lines only, no vertical lines -----
           gridData: FlGridData(
             show: true,
             drawVerticalLine: false,
@@ -68,24 +73,33 @@ class StockChart extends StatelessWidget {
               strokeWidth: 1,
             ),
           ),
+
+          // ----- hide border around the chart -----
           borderData: FlBorderData(show: false),
+
+          // ----- axis titles and labels -----
           titlesData: FlTitlesData(
+            // hide y-axis on the left
             leftTitles: const AxisTitles(
               sideTitles: SideTitles(showTitles: false),
             ),
+            // show price on y-axis
             rightTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                reservedSize: 56,
+                reservedSize: 48,
                 getTitlesWidget: (value, meta) => Text(
                   '\$${value.toStringAsFixed(0)}',
                   style: const TextStyle(color: Colors.white38, fontSize: 10),
                 ),
               ),
             ),
+
+            // hide x-axis line and labels
             topTitles: const AxisTitles(
               sideTitles: SideTitles(showTitles: false),
             ),
+            // show date on x-axis
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
@@ -96,7 +110,7 @@ class StockChart extends StatelessWidget {
                   return Padding(
                     padding: const EdgeInsets.only(top: 6),
                     child: Text(
-                      '${dt.month}/${dt.day}',
+                      '${dt.day}/${dt.month}',
                       style: const TextStyle(color: Colors.white38, fontSize: 10),
                     ),
                   );
@@ -104,6 +118,8 @@ class StockChart extends StatelessWidget {
               ),
             ),
           ),
+
+          // ----- the line and area below it -----
           lineBarsData: [
             LineChartBarData(
               spots: spots,
@@ -125,7 +141,31 @@ class StockChart extends StatelessWidget {
               ),
             ),
           ],
+
+          // ------ tooltip on touch ------
           lineTouchData: LineTouchData(
+            // --- control the touch dot size ---
+            getTouchedSpotIndicator: (barData, spotIndexes) {
+              return spotIndexes.map((index) {
+                return TouchedSpotIndicatorData(
+                  FlLine(
+                    color: lineColor,
+                    strokeWidth: 1,
+                    dashArray: [4, 4], // dashed vertical line on touch
+                  ),
+                  FlDotData(
+                    show: true,
+                    getDotPainter: (spot, percent, barData, index) =>
+                        FlDotCirclePainter(
+                      radius: 4, // ── change this to make dot bigger/smaller ──
+                      color: lineColor,
+                      strokeWidth: 2,
+                      strokeColor: const Color(0xFFFF1744),
+                    ),
+                  ),
+                );
+              }).toList();
+            },
             touchTooltipData: LineTouchTooltipData(
               getTooltipColor: (_) => const Color(0xFF21262D),
               getTooltipItems: (spots) => spots.map((s) {
