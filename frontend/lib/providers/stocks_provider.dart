@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
-// import 'dart:io' show Platform;
+import 'dart:io' show Platform;
 import 'package:http/http.dart' as http;
 import '../utils/constants.dart';
 
@@ -20,14 +20,6 @@ class StockPrice {
 }
 
 class StocksProvider extends ChangeNotifier {
-  // 20 stocks moved to constants.dart for better reusability
-  // static const List<String> watchlist = [
-  //   'UNT', 'TRNS', 'EGP', 'PHG', 'SVT',
-  //   'SNE', 'JOB', 'MDT', 'MDC', 'NC',
-  //   'MO', 'BPOP', 'ALCO', 'SPXC', 'TRN',
-  //   'ADM', 'GGG', 'BAC', 'LNC', 'PPG',
-  // ];
-
   final Map<String, StockPrice> _prices = {};
   final Map<String, double> _previousPrices = {};
   Timer? _timer;
@@ -72,22 +64,22 @@ class StocksProvider extends ChangeNotifier {
     try {
 
       // ------ MAIRE's SETUP FOR ANDROID EMULATOR ------
-      // String baseUrl;
-      // if (Platform.isAndroid) {
-      //   baseUrl = 'http://10.0.2.2:5001';
-      // } else {
-      //   baseUrl = 'http://127.0.0.1:5001';
-      // }
+      String baseUrl;
+      if (Platform.isAndroid) {
+        baseUrl = 'http://10.0.2.2:5001';
+      } else {
+        baseUrl = 'http://127.0.0.1:5001';
+      }
 
-      // final response = await http
-      //     .get(Uri.parse('$baseUrl/exchange_rate/$symbol'))
-      //     .timeout(const Duration(milliseconds: 500));
+      final response = await http
+          .get(Uri.parse('$baseUrl/exchange_rate/$symbol'))
+          .timeout(const Duration(milliseconds: 500));
 
 
       // ------ ORIGINAL CODE ------
-      final response = await http.get(
-        Uri.parse('http://localhost:5001/exchange_rate/$symbol'),
-      ).timeout(const Duration(milliseconds: 500));
+      // final response = await http.get(
+      //   Uri.parse('http://localhost:5001/exchange_rate/$symbol'),
+      // ).timeout(const Duration(milliseconds: 500));
       
 
       if (response.statusCode == 200) {
