@@ -63,11 +63,8 @@ stock-market/
 │   │   │   ├── auth_provider.dart           <- login / signup state
 │   │   │   ├── stocks_provider.dart         <- watchlist + real-time updates
 │   │   │   ├── wallet_provider.dart         <- holdings + balance state
+│   │   │   ├── nav_provider.dart            <- app navigation state
 │   │   │   └── history_provider.dart        <- historical data state
-│   │   ├── services/
-│   │   │   ├── stock_service.dart           <- HTTP calls to mock-server
-│   │   │   ├── auth_service.dart            <- login / signup logic
-│   │   │   └── wallet_service.dart          <- buy / sell / balance logic
 │   │   ├── widgets/
 │   │   │   └── stock_chart.dart             <- historical chart widget
 │   │   ├── db/
@@ -75,8 +72,7 @@ stock-market/
 │   │   └── utils/
 │   │       ├── constants.dart               <- mock-server base URL, config
 │   │       └── formatters.dart              <- price/date formatting
-│   ├── pubspec.yaml
-│   └── .env
+│   └── pubspec.yaml
 │
 ├── mock-server/                             <- mock stock data server
 │   ├── app.py                               <- Python Flask server
