@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
-// import 'dart:io' show Platform;
+import 'dart:io' show Platform;
 import 'package:http/http.dart' as http;
 import '../utils/constants.dart';
 
@@ -63,23 +63,23 @@ class StocksProvider extends ChangeNotifier {
   Future<void> _fetchPrice(String symbol) async {
     try {
 
-      // ------ MAIRE's SETUP FOR ANDROID EMULATOR ------
-      // String baseUrl;
-      // if (Platform.isAndroid) {
-      //   baseUrl = 'http://10.0.2.2:5001';
-      // } else {
-      //   baseUrl = 'http://127.0.0.1:5001';
-      // }
+      // ------ SETUP FOR ANDROID EMULATOR ------
+      String baseUrl;
+      if (Platform.isAndroid) {
+        baseUrl = 'http://10.0.2.2:5001'; // Android emulator's localhost  
+      } else {
+        baseUrl = 'http://127.0.0.1:5001';
+      }
 
-      // final response = await http
-      //     .get(Uri.parse('$baseUrl/exchange_rate/$symbol'))
-      //     .timeout(const Duration(milliseconds: 500));
+      final response = await http
+          .get(Uri.parse('$baseUrl/exchange_rate/$symbol'))
+          .timeout(const Duration(milliseconds: 500));
 
 
-      // ------ ORIGINAL CODE ------
-      final response = await http.get(
-        Uri.parse('http://localhost:5001/exchange_rate/$symbol'),
-      ).timeout(const Duration(milliseconds: 500));
+      // ------ SETUP FOR iOS SIMULATOR ------
+      // final response = await http.get(
+      //   Uri.parse('http://localhost:5001/exchange_rate/$symbol'),
+      // ).timeout(const Duration(milliseconds: 500));
       
 
       if (response.statusCode == 200) {

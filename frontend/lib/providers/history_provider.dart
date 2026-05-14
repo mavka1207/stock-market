@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-// import 'dart:io' show Platform;
+import 'dart:io' show Platform;
 
 class PricePoint {
   final DateTime date;
@@ -63,26 +63,26 @@ class HistoryProvider extends ChangeNotifier {
       final endDate = DateTime.now();
       final startDate = endDate.subtract(const Duration(days: 365));
 
-      // ------ MAIRE's SETUP FOR ANDROID EMULATOR ------
-    // String baseUrl;
-    //   if (Platform.isAndroid) {
-    //     baseUrl = 'http://10.0.2.2:5001';
-    //   } else {
-    //     baseUrl = 'http://127.0.0.1:5001';
-    //   }
+      // ------ SETUP FOR ANDROID EMULATOR ------
+    String baseUrl;
+      if (Platform.isAndroid) {
+        baseUrl = 'http://10.0.2.2:5001';
+      } else {
+        baseUrl = 'http://127.0.0.1:5001';
+      }
 
-    //   final url = Uri.parse(
-    //     '$baseUrl/hist/$symbol'
-    //     '?start_date=${_formatDate(startDate)}'
-    //     '&end_date=${_formatDate(endDate)}',
-    //   );
-
-      // ------ ORIGINAL CODE ------
       final url = Uri.parse(
-        'http://localhost:5001/hist/$symbol'
+        '$baseUrl/hist/$symbol'
         '?start_date=${_formatDate(startDate)}'
         '&end_date=${_formatDate(endDate)}',
       );
+
+      // ------ SETUP FOR iOS SIMULATOR ------
+      // final url = Uri.parse(
+      //   'http://localhost:5001/hist/$symbol'
+      //   '?start_date=${_formatDate(startDate)}'
+      //   '&end_date=${_formatDate(endDate)}',
+      // );
 
       final response = await http.get(url).timeout(
         const Duration(seconds: 10),
